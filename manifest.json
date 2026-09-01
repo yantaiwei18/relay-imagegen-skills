@@ -1,0 +1,9 @@
+{
+  "name": "relay-imagegen-portable-windows",
+  "version": "2.0.0",
+  "platform": "windows",
+  "skill": "relay-imagegen",
+  "api_compatibility": "openai-images",
+  "provider_specific": false,
+  "contains_credentials": false
+}

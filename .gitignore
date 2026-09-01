@@ -1,0 +1,17 @@
+# Local credentials and environment files
+.env
+.env.*
+!.env.example
+*.secret
+*.secrets
+
+# Local diagnostics and generated images
+outputs/
+*.partial-*
+*.diagnostics.json
+
+# PowerShell and editor noise
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db
