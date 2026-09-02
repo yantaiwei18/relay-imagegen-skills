@@ -4,6 +4,39 @@
 
 这是一个中转站无关的 Codex skill。它不绑定 Ofapp，也不包含任何 API Key。只要服务商兼容 OpenAI Images API 的请求和响应格式，就可以使用。
 
+## 给 Codex 的安装提示词
+
+把下面整段提示词直接发给 Codex。这里使用的是仓库内真正的 skill 目录，而不是仓库根目录：
+
+```text
+请使用 Codex 的 skill-installer，从这个 GitHub skill 地址安装技能：
+https://github.com/yantaiwei18/relay-imagegen-skills/tree/main/skill/relay-imagegen
+
+安装要求：
+1. 安装到默认的 CODEX_HOME/skills/relay-imagegen 目录。
+2. 安装并使用仓库内的 SKILL.md、agents/openai.yaml 和 scripts/invoke-relay-imagegen.ps1。
+3. 安装完成后，确认 relay-imagegen 已可被自动发现，并说明下一轮对话即可使用。
+4. 不要调用内置 imagegen provider；以后所有文生图、参考图生成和图片编辑都优先使用 relay-imagegen。
+5. 不要把 API Key 写入技能文件、README、日志、诊断文件、Git 提交或回复内容。
+6. 不要修改我的 Codex 主模型配置；只安装这个生图技能。
+```
+
+也可以直接把下面这个 GitHub tree 地址交给 Codex 的技能安装流程：
+
+```text
+https://github.com/yantaiwei18/relay-imagegen-skills/tree/main/skill/relay-imagegen
+```
+
+安装 skill 和配置中转站是两个步骤。安装完成后，再把以下提示词发给 Codex，让它检查配置；如果配置缺失，让它逐项询问，但 API Key 必须使用安全输入或由用户在系统环境变量中设置：
+
+```text
+请检查 relay-imagegen 的 RELAY_IMAGE_* 配置。
+如果缺少配置，请依次询问中转站名称、生成 URL、编辑 URL、模型、鉴权 Header、鉴权前缀、兼容档位和附加 Header；API Key 不要让我粘贴到普通聊天文本中，请指导我通过安全输入或系统环境变量 RELAY_IMAGE_API_KEY 设置。
+配置完成后只做 DryRun 验证，不要实际生成图片，不要输出或记录 API Key。
+```
+
+更多可直接复制的安装和配置文案见 [INSTALL_PROMPT.md](INSTALL_PROMPT.md)。
+
 ## 功能
 
 - 文生图：`/images/generations`
@@ -201,6 +234,7 @@ relay-imagegen-skills/
 ├─ install.ps1
 ├─ uninstall.ps1
 ├─ manifest.json
+├─ INSTALL_PROMPT.md
 └─ skill/
    └─ relay-imagegen/
       ├─ SKILL.md
