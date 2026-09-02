@@ -240,7 +240,7 @@ $script = Join-Path $HOME ".codex\\skills\\relay-imagegen\\scripts\\invoke-relay
 & $script -Action download -ResumeFile "C:\\temp\\product-variants\\batch-image-resume.json"
 ```
 
-支持的批量动作包括 `models`、`list`、`status`、`items`、`download`、`content`、`cancel` 和 `delete`。取消和删除需要显式使用 `-Force`。提交前确认预计输出不超过 200 张，并按服务商要求等待轮询，不要高频请求。
+支持的批量动作包括 `submit`、`list`、`status`、`items`、`download`、`content`、`cancel` 和 `delete`。脚本不会调用 `/v1/images/batches/models` 做批量模型探测，批量请求直接使用 `RELAY_IMAGE_MODEL` 中配置的模型 ID。取消和删除需要显式使用 `-Force`。提交前确认预计输出不超过 200 张，并按服务商要求等待轮询，不要高频请求。
 
 ## 验证配置
 

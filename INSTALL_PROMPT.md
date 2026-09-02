@@ -81,6 +81,7 @@ https://github.com/yantaiwei18/relay-imagegen-skills
 - 文生图：不传 `ReferenceImagePath`，使用 `RELAY_IMAGE_GENERATIONS_URL`。
 - 参考图或编辑：所有普通图片都放入 `ReferenceImagePath` 数组，使用 `RELAY_IMAGE_EDITS_URL`。
 - 批量生图：使用 `invoke-relay-imagegen-batch.ps1` 和 `RELAY_IMAGE_BATCHES_URL`，不要把批量请求塞进普通生成脚本。
+- 批量脚本不调用批量模型发现接口；模型 ID 直接使用已配置的 `RELAY_IMAGE_MODEL`，不要请求 `/v1/images/batches/models`。
 - 多张参考图必须上传为多个 `image[]` 字段。
 - 第二张参考图绝不能传给 `MaskPath`。
 - `MaskPath` 只用于用户明确提供的 alpha PNG，并且必须与第一张参考图尺寸一致。

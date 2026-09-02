@@ -76,8 +76,9 @@ $scriptPath = Join-Path $codexHome "skills\relay-imagegen\scripts\invoke-relay-i
 & $scriptPath @params
 ```
 
-The batch script supports `submit`, `models`, `list`, `status`, `items`,
-`download`, `content`, `cancel`, and `delete`. `cancel` and `delete` require
+The batch script supports `submit`, `list`, `status`, `items`, `download`,
+`content`, `cancel`, and `delete`. It does not query a batch-model discovery
+endpoint; use the model ID configured in `RELAY_IMAGE_MODEL`. `cancel` and `delete` require
 `-Force`. Do not poll aggressively: wait 20 to 30 seconds before the first
 status check, then use roughly 60 to 120 second intervals while queued.
 

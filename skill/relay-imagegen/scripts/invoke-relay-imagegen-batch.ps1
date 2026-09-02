@@ -1,6 +1,6 @@
 [CmdletBinding(PositionalBinding = $false)]
 param(
-    [ValidateSet("submit", "list", "models", "status", "items", "download", "content", "cancel", "delete")]
+    [ValidateSet("submit", "list", "status", "items", "download", "content", "cancel", "delete")]
     [string]$Action = "submit",
 
     [string[]]$Prompt = @(),
@@ -272,11 +272,6 @@ if ($Action -ne "submit" -and $DryRun) {
 }
 
 switch ($Action) {
-    "models" {
-        $result = Invoke-RelayJsonRequest -Method GET -Uri "$endpoint/models"
-        $result | ConvertTo-Json -Depth 10 -Compress
-        break
-    }
     "list" {
         $query = "limit=$Limit"
         if (-not [string]::IsNullOrWhiteSpace($StatusFilter)) {
