@@ -31,6 +31,7 @@ skill 安装成功后，复制下面整段文字发送给 Codex：
 - 中转站名称
 - 文生图 URL（RELAY_IMAGE_GENERATIONS_URL）
 - 参考图/编辑 URL（RELAY_IMAGE_EDITS_URL）
+- 批量生图 URL（RELAY_IMAGE_BATCHES_URL）；没有批量接口可以设置为 none
 - 图片模型 ID（RELAY_IMAGE_MODEL）
 - 鉴权 Header（默认 Authorization）
 - 鉴权前缀（默认 Bearer；无前缀使用 none）
@@ -72,13 +73,14 @@ API Key 不要让我粘贴到普通聊天文本中，也不要在回复中显示
 请从以下 GitHub 仓库获取 Windows 便携安装包：
 https://github.com/yantaiwei18/relay-imagegen-skills
 
-请在用户明确确认后运行仓库根目录的 install.ps1。安装时使用交互式安全输入配置 API Key，不要把 -ApiKey 明文写入命令、脚本或日志。保留其他 Codex 配置，只添加 relay-imagegen 的受管理规则。安装后重启 Codex，并用 DryRun 验证，不要实际生成图片。
+请在用户明确确认后运行仓库根目录的 install.ps1。安装时使用交互式安全输入配置 API Key，不要把 -ApiKey 明文写入命令、脚本或日志。保留其他 Codex 配置，只添加 relay-imagegen 的受管理规则。安装时同时询问并配置可选的 RELAY_IMAGE_BATCHES_URL；如果中转站不支持批量接口就设置为 none。安装后重启 Codex，并用普通生成脚本和批量脚本的 DryRun 验证，不要实际生成图片或提交批量任务。
 ```
 
 ## 使用规范
 
 - 文生图：不传 `ReferenceImagePath`，使用 `RELAY_IMAGE_GENERATIONS_URL`。
 - 参考图或编辑：所有普通图片都放入 `ReferenceImagePath` 数组，使用 `RELAY_IMAGE_EDITS_URL`。
+- 批量生图：使用 `invoke-relay-imagegen-batch.ps1` 和 `RELAY_IMAGE_BATCHES_URL`，不要把批量请求塞进普通生成脚本。
 - 多张参考图必须上传为多个 `image[]` 字段。
 - 第二张参考图绝不能传给 `MaskPath`。
 - `MaskPath` 只用于用户明确提供的 alpha PNG，并且必须与第一张参考图尺寸一致。

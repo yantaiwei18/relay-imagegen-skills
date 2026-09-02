@@ -4,6 +4,7 @@ param(
     [string]$ProviderName,
     [string]$GenerationsUrl,
     [string]$EditsUrl,
+    [string]$BatchesUrl,
     [string]$Model,
     [string]$ApiKey,
     [string]$AuthHeader,
@@ -91,6 +92,36 @@ function Get-EditEndpoint {
     return ""
 }
 
+function Get-BatchesEndpoint {
+    param(
+        [string]$GenerationEndpoint,
+        [string]$ExplicitBatchesUrl
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($ExplicitBatchesUrl)) {
+        if ($ExplicitBatchesUrl.Trim().ToLowerInvariant() -eq "none") {
+            return ""
+        }
+        $uri = Get-AbsoluteHttpUri -Value $ExplicitBatchesUrl -Label "Batches URL"
+        $path = $uri.AbsolutePath.TrimEnd("/")
+        if ([string]::IsNullOrWhiteSpace($path)) {
+            $path = "/v1/images/batches"
+        } elseif ($path -match '(?i)/v1$') {
+            $path = "$path/images/batches"
+        }
+        $builder = New-Object System.UriBuilder -ArgumentList $uri
+        $builder.Path = $path.TrimStart("/")
+        $builder.Query = ""
+        $builder.Fragment = ""
+        return $builder.Uri.AbsoluteUri.TrimEnd("/")
+    }
+
+    if ($GenerationEndpoint -match '(?i)/images/generations$') {
+        return $GenerationEndpoint -replace '(?i)/images/generations$', '/images/batches'
+    }
+    return ""
+}
+
 function Set-RelayEnvironmentValue {
     param(
         [string]$Name,
@@ -119,7 +150,8 @@ $sourceSkill = Join-Path $PSScriptRoot "skill\relay-imagegen"
 $requiredSourceFiles = @(
     (Join-Path $sourceSkill "SKILL.md"),
     (Join-Path $sourceSkill "agents\openai.yaml"),
-    (Join-Path $sourceSkill "scripts\invoke-relay-imagegen.ps1")
+    (Join-Path $sourceSkill "scripts\invoke-relay-imagegen.ps1"),
+    (Join-Path $sourceSkill "scripts\invoke-relay-imagegen-batch.ps1")
 )
 foreach ($requiredFile in $requiredSourceFiles) {
     if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
@@ -157,6 +189,13 @@ if (-not $PSBoundParameters.ContainsKey("EditsUrl") -and -not $NonInteractive) {
 $editEndpoint = Get-EditEndpoint `
     -GenerationEndpoint $generationEndpoint `
     -ExplicitEditUrl $EditsUrl
+
+if (-not $PSBoundParameters.ContainsKey("BatchesUrl") -and -not $NonInteractive) {
+    $BatchesUrl = Read-Host "Batch images URL [auto; enter none to disable batch images]"
+}
+$batchesEndpoint = Get-BatchesEndpoint `
+    -GenerationEndpoint $generationEndpoint `
+    -ExplicitBatchesUrl $BatchesUrl
 
 if ([string]::IsNullOrWhiteSpace($Model)) {
     if ($NonInteractive) {
@@ -245,6 +284,7 @@ $settings = @{
     RELAY_IMAGE_PROVIDER_NAME = $ProviderName
     RELAY_IMAGE_GENERATIONS_URL = $generationEndpoint
     RELAY_IMAGE_EDITS_URL = $editEndpoint
+    RELAY_IMAGE_BATCHES_URL = $batchesEndpoint
     RELAY_IMAGE_MODEL = $Model
     RELAY_IMAGE_API_KEY = $ApiKey
     RELAY_IMAGE_AUTH_HEADER = $AuthHeader
@@ -263,7 +303,7 @@ $managedBlock = @'
 <!-- BEGIN RELAY-IMAGEGEN MANAGED BLOCK -->
 # Global Image Generation Preference
 
-For every request to generate or edit a raster image, including requests with
+For every request to generate, batch-generate, or edit a raster image, including requests with
 one or more reference images or a mask, use the `relay-imagegen` skill and its
 bundled script instead of the built-in `imagegen` provider. Read endpoints,
 model, authentication settings, and credential from `RELAY_IMAGE_*` variables.
@@ -271,6 +311,9 @@ Never print, echo, or embed the API key in generated files.
 
 Only use another image provider when the user explicitly requests it. Use the
 configured relay edits endpoint for reference-image generation and editing.
+For batch image jobs, use the bundled batch script and the optional
+`RELAY_IMAGE_BATCHES_URL` endpoint. Preserve the batch resume record and never
+store API keys or reference-image base64 in it.
 <!-- END RELAY-IMAGEGEN MANAGED BLOCK -->
 '@
 
@@ -306,6 +349,7 @@ if (-not $selfTest.credential_configured -or
     provider = $ProviderName
     generations_url = $generationEndpoint
     edits_url = $editEndpoint
+    batches_url = $batchesEndpoint
     edit_support_configured = -not [string]::IsNullOrWhiteSpace($editEndpoint)
     model = $Model
     auth_header = $AuthHeader
@@ -314,4 +358,3 @@ if (-not $selfTest.credential_configured -or
     environment_target = $EnvironmentTarget
     restart_codex = ($EnvironmentTarget -eq "User")
 } | ConvertTo-Json -Depth 4
-

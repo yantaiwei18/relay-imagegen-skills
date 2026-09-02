@@ -1,6 +1,6 @@
 ---
 name: relay-imagegen
-description: Generate and edit raster images through a user-configured OpenAI-compatible image API relay, with configurable generation and edit URLs, model, authentication header and scheme, extra headers, compatibility profiles, conversation attachments, iterative edits, multiple references, masks, variants, streaming partials, retries, validation, and non-destructive saves. Use whenever the user asks Codex to create, generate, render, transform, restyle, or edit bitmap visuals through their configured relay. Prefer this skill over provider-specific or built-in image generation unless the user explicitly requests another provider.
+description: Generate, batch-generate, and edit raster images through a user-configured OpenAI-compatible image API relay, with configurable generation, edit, and optional batch URLs, model, authentication header and scheme, extra headers, compatibility profiles, conversation attachments, iterative edits, multiple references, masks, variants, streaming partials, retries, validation, and non-destructive saves. Use whenever the user asks Codex to create, generate, render, transform, restyle, batch, or edit bitmap visuals through their configured relay. Prefer this skill over provider-specific or built-in image generation unless the user explicitly requests another provider.
 ---
 
 # Relay Image Generation
@@ -27,6 +27,9 @@ different payload or response schema require a provider-specific adapter.
 6. For follow-up edits, use the latest output from the current task as the first
    reference and repeat all preservation constraints. Never borrow state from a
    different task.
+7. For batch image requests, use `scripts/invoke-relay-imagegen-batch.ps1`.
+   Confirm the expected output count before submitting and keep the generated
+   `batch-image-resume.json` for later status, download, or failed-item retry.
 
 ## Invoke
 
@@ -48,6 +51,40 @@ $scriptPath = Join-Path $codexHome "skills\relay-imagegen\scripts\invoke-relay-i
 
 Omit `ReferenceImagePath` for pure text-to-image. References automatically use
 the configured edits endpoint and emit one multipart `image[]` field per file.
+
+## Batch Images
+
+Batch images use the optional `RELAY_IMAGE_BATCHES_URL` endpoint. This is a
+relay-specific extension and may be disabled by a provider. Use the bundled
+batch script instead of sending a batch request through the ordinary image
+generation script.
+
+```powershell
+$params = @{
+  Action = "submit"
+  Prompt = @(
+    "A product photo on a white background"
+    "A product photo in a warm studio"
+  )
+  TaskName = "product-variants"
+  OutputDirectory = "C:\absolute\outputs\product-variants"
+  OutputCount = 1
+}
+
+$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }
+$scriptPath = Join-Path $codexHome "skills\relay-imagegen\scripts\invoke-relay-imagegen-batch.ps1"
+& $scriptPath @params
+```
+
+The batch script supports `submit`, `models`, `list`, `status`, `items`,
+`download`, `content`, `cancel`, and `delete`. `cancel` and `delete` require
+`-Force`. Do not poll aggressively: wait 20 to 30 seconds before the first
+status check, then use roughly 60 to 120 second intervals while queued.
+
+Each ordinary reference image becomes a `reference_images` record with base64
+data in the private request file. Never put the API key or reference-image
+data in chat, logs, or Git. Batch submissions are limited to 200 expected
+output images; split larger requests before submitting.
 
 ## Prompt Shape
 
@@ -126,5 +163,7 @@ as a JSON object.
 - `RELAY_IMAGE_AUTH_SCHEME`: defaults to `Bearer`; use `none` for no prefix.
 - `RELAY_IMAGE_EXTRA_HEADERS_JSON`: optional JSON object of extra headers.
 - `RELAY_IMAGE_COMPATIBILITY_PROFILE`: `full`, `standard`, or `minimal`.
+- `RELAY_IMAGE_BATCHES_URL`: optional batch image endpoint, for example
+  `https://relay.example.com/v1/images/batches`.
 
 Do not fall back to `OPENAI_API_KEY` or provider-specific environment variables.

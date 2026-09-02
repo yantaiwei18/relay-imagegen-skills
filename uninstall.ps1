@@ -43,6 +43,7 @@ if ($RemoveCredentials) {
         "RELAY_IMAGE_PROVIDER_NAME",
         "RELAY_IMAGE_GENERATIONS_URL",
         "RELAY_IMAGE_EDITS_URL",
+        "RELAY_IMAGE_BATCHES_URL",
         "RELAY_IMAGE_MODEL",
         "RELAY_IMAGE_API_KEY",
         "RELAY_IMAGE_AUTH_HEADER",
@@ -63,4 +64,3 @@ if ($RemoveCredentials) {
     credentials_removed = [bool]$RemoveCredentials
     restart_codex = $true
 } | ConvertTo-Json
-

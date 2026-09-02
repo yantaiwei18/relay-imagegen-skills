@@ -64,6 +64,7 @@ https://github.com/yantaiwei18/relay-imagegen-skills/tree/main/skill/relay-image
 | Relay name | 随便填，例如 `我的中转站` |
 | Generation URL | 粘贴文生图地址，例如 `https://relay.example.com/v1/images/generations` |
 | Edit URL | 粘贴参考图/编辑地址，例如 `https://relay.example.com/v1/images/edits`；不确定时直接回车自动推导 |
+| Batch images URL | 粘贴批量生图地址，例如 `https://relay.example.com/v1/images/batches`；没有批量接口就输入 `none` |
 | Image model | 填服务商提供的图片模型 ID，例如 `gpt-image-2` |
 | API key header | 一般直接回车，使用 `Authorization` |
 | API key prefix | 一般直接回车，使用 `Bearer` |
@@ -156,6 +157,7 @@ https://relay.example.com/api/image/create
 | `RELAY_IMAGE_PROVIDER_NAME` | 中转站显示名称 |
 | `RELAY_IMAGE_GENERATIONS_URL` | 文生图端点 |
 | `RELAY_IMAGE_EDITS_URL` | 参考图/编辑端点 |
+| `RELAY_IMAGE_BATCHES_URL` | 可选批量生图端点 |
 | `RELAY_IMAGE_MODEL` | 图片模型 ID |
 | `RELAY_IMAGE_API_KEY` | API Key |
 | `RELAY_IMAGE_AUTH_HEADER` | 鉴权 Header，默认 `Authorization` |
@@ -210,6 +212,36 @@ image[]=@style.jpg
 
 不要把第二张参考图传给 `MaskPath`。`MaskPath` 只用于用户明确提供的、带 alpha 通道且与第一张 PNG 参考图尺寸一致的蒙版。
 
+### 批量生图
+
+批量接口不是 OpenAI Images API 的统一标准，需要中转站明确支持并配置 `RELAY_IMAGE_BATCHES_URL`。使用独立的批量脚本：
+
+```powershell
+$params = @{
+  Action = "submit"
+  Prompt = @(
+    "A product photo on a white background"
+    "A product photo in a warm studio"
+  )
+  TaskName = "product-variants"
+  OutputDirectory = "C:\\temp\\product-variants"
+  OutputCount = 1
+}
+
+$script = Join-Path $HOME ".codex\\skills\\relay-imagegen\\scripts\\invoke-relay-imagegen-batch.ps1"
+& $script @params
+```
+
+提交成功后，脚本会在输出目录保存 `batch-image-resume.json`。后续操作示例：
+
+```powershell
+& $script -Action status -ResumeFile "C:\\temp\\product-variants\\batch-image-resume.json"
+& $script -Action items -ResumeFile "C:\\temp\\product-variants\\batch-image-resume.json"
+& $script -Action download -ResumeFile "C:\\temp\\product-variants\\batch-image-resume.json"
+```
+
+支持的批量动作包括 `models`、`list`、`status`、`items`、`download`、`content`、`cancel` 和 `delete`。取消和删除需要显式使用 `-Force`。提交前确认预计输出不超过 200 张，并按服务商要求等待轮询，不要高频请求。
+
 ## 验证配置
 
 DryRun 只解析配置和请求，不会访问生图接口，也不会产生费用：
@@ -263,5 +295,7 @@ relay-imagegen-skills/
    └─ relay-imagegen/
       ├─ SKILL.md
       ├─ agents/openai.yaml
-      └─ scripts/invoke-relay-imagegen.ps1
+      └─ scripts/
+         ├─ invoke-relay-imagegen.ps1
+         └─ invoke-relay-imagegen-batch.ps1
 ```
