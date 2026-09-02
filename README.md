@@ -49,6 +49,29 @@ https://github.com/yantaiwei18/relay-imagegen-skills/tree/main/skill/relay-image
 
 ## 快速安装
 
+### 最简单的方式
+
+在 Windows 上只需要做三件事：
+
+1. 下载并解压本仓库。
+2. 双击 `setup.cmd`。
+3. 按向导输入中转站信息；API Key 输入时不会显示在屏幕上。
+
+推荐按下面填写：
+
+| 向导问题 | 怎么填 |
+| --- | --- |
+| Relay name | 随便填，例如 `我的中转站` |
+| Generation URL | 粘贴文生图地址，例如 `https://relay.example.com/v1/images/generations` |
+| Edit URL | 粘贴参考图/编辑地址，例如 `https://relay.example.com/v1/images/edits`；不确定时直接回车自动推导 |
+| Image model | 填服务商提供的图片模型 ID，例如 `gpt-image-2` |
+| API key header | 一般直接回车，使用 `Authorization` |
+| API key prefix | 一般直接回车，使用 `Bearer` |
+| Compatibility profile | 一般直接回车，使用 `full` |
+| Relay image API key | 粘贴 Key，输入时不会回显 |
+
+安装器会自动把配置保存到当前 Windows 用户的 `RELAY_IMAGE_*` 环境变量，并运行 DryRun 自检。完成后完全退出并重新打开 Codex。
+
 ### 方式一：交互式安装
 
 1. 安装并启动过一次 Windows 版 Codex。
@@ -231,6 +254,7 @@ $script = Join-Path $HOME ".codex\\skills\\relay-imagegen\\scripts\\invoke-relay
 ```text
 relay-imagegen-skills/
 ├─ install.cmd
+├─ setup.cmd
 ├─ install.ps1
 ├─ uninstall.ps1
 ├─ manifest.json

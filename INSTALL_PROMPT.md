@@ -42,6 +42,28 @@ API Key 不要让我粘贴到普通聊天文本中，也不要在回复中显示
 配置完成后只运行 invoke-relay-imagegen.ps1 的 DryRun，不要实际调用生图接口，不要产生图片费用。DryRun 只能报告端点、模型、鉴权 Header 名称、兼容档位和 credential_configured 状态，不能报告 Key 内容。
 ```
 
+## 傻瓜式 Windows 安装提示词
+
+如果用户不想手动执行多条命令，把仓库地址和下面这段话一起发给 Codex：
+
+```text
+请帮我完成 relay-imagegen 的傻瓜式安装和配置。
+
+仓库：https://github.com/yantaiwei18/relay-imagegen-skills
+
+请按以下顺序操作：
+1. 安装仓库内的 skill/relay-imagegen 到 CODEX_HOME/skills/relay-imagegen。
+2. 获取仓库根目录的 install.ps1，并在我确认后以交互方式运行它。
+3. 依次询问我中转站名称、文生图 URL、参考图/编辑 URL、图片模型 ID、鉴权 Header、鉴权前缀和兼容档位。
+4. API Key 必须使用隐藏的安全输入，不要让我在普通聊天消息中发送，也不要回显、记录或写入仓库。
+5. URL 如果我只提供域名或 /v1 地址，请自动补全标准 /images/generations 和 /images/edits；非标准 URL 不要猜，直接让我确认完整地址。
+6. 配置写入当前 Windows 用户的 RELAY_IMAGE_* 环境变量，并保留其他 Codex 配置不变。
+7. 安装和配置完成后只执行 invoke-relay-imagegen.ps1 的 DryRun，确认端点、模型、鉴权 Header 名称和 credential_configured 状态；不要实际生成图片。
+8. 告诉我必须完全重启 Codex，下一轮对话才使用新配置。
+```
+
+如果用户自己操作 Windows，直接双击仓库根目录的 `setup.cmd` 即可。它会完成同一套安装、配置和 DryRun 流程。
+
 ## Windows 便携安装提示词
 
 如果用户希望同时安装全局规则、写入用户环境变量并使用交互式安装器，发送：
