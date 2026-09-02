@@ -458,6 +458,7 @@ if ($mode -eq "edit") {
 
     $curlArguments = @(
         "-sS",
+        "--globoff",
         "--max-time", "600",
         "--request", "POST",
         $endpoint
@@ -493,10 +494,12 @@ if ($mode -eq "edit") {
         }
     }
     foreach ($referenceImage in $resolvedReferenceImages) {
-        $curlArguments += @("--form", "image[]=@$referenceImage")
+        $curlUploadPath = ($referenceImage -replace '\\', '/')
+        $curlArguments += @("--form", "image[]=@$curlUploadPath")
     }
     if (-not [string]::IsNullOrWhiteSpace($resolvedMask)) {
-        $curlArguments += @("--form", "mask=@$resolvedMask")
+        $curlMaskPath = ($resolvedMask -replace '\\', '/')
+        $curlArguments += @("--form", "mask=@$curlMaskPath")
     }
 
     $content = $null
@@ -571,6 +574,10 @@ if ($mode -eq "edit") {
         } catch {
             $statusCode = 0
             $errorContent = $_.Exception.Message
+            if ($null -ne $_.ErrorDetails -and
+                -not [string]::IsNullOrWhiteSpace($_.ErrorDetails.Message)) {
+                $errorContent = $_.ErrorDetails.Message
+            }
             if ($null -ne $_.Exception.Response) {
                 try {
                     $statusCode = [int]$_.Exception.Response.StatusCode
