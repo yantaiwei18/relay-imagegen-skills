@@ -125,10 +125,14 @@ function Invoke-RelayJsonRequest {
     param(
         [Parameter(Mandatory = $true)][ValidateSet("GET", "POST", "DELETE")][string]$Method,
         [Parameter(Mandatory = $true)][string]$Uri,
-        [hashtable]$Body
+        [hashtable]$Body,
+        [string]$IdempotencyKey
     )
 
     $headers = Get-AuthHeaders
+    if (-not [string]::IsNullOrWhiteSpace($IdempotencyKey)) {
+        $headers["Idempotency-Key"] = $IdempotencyKey
+    }
     try {
         $requestParams = @{
             Uri = $Uri
@@ -347,7 +351,8 @@ switch ($Action) {
         }
         $requestJson = $payload | ConvertTo-Json -Depth 20
         [IO.File]::WriteAllText($RequestFile, $requestJson, (New-Object Text.UTF8Encoding($false)))
-        $response = Invoke-RelayJsonRequest -Method POST -Uri $endpoint -Body $payload
+        $idempotencyKey = [guid]::NewGuid().ToString()
+        $response = Invoke-RelayJsonRequest -Method POST -Uri $endpoint -Body $payload -IdempotencyKey $idempotencyKey
         $id = Get-ResponseValue -Object $response -Names @("id", "batch_id")
         if ([string]::IsNullOrWhiteSpace([string]$id)) {
             throw "Batch submit returned no batch id. The sanitized response was: $($response | ConvertTo-Json -Compress)"
@@ -360,6 +365,7 @@ switch ($Action) {
             model = $Model
             output_dir = $OutputDirectory
             request_file = $RequestFile
+            idempotency_key = $idempotencyKey
             resume_file = $resumePath
             submitted_at = (Get-Date).ToUniversalTime().ToString("o")
             last_checked_at = $null
