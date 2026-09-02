@@ -282,7 +282,7 @@ switch ($Action) {
         if (-not [string]::IsNullOrWhiteSpace($StatusFilter)) {
             $query += "&status=$([Uri]::EscapeDataString($StatusFilter))"
         }
-        $result = Invoke-RelayJsonRequest -Method GET -Uri "$endpoint?$query"
+        $result = Invoke-RelayJsonRequest -Method GET -Uri "${endpoint}?$query"
         $result | ConvertTo-Json -Depth 10 -Compress
         break
     }
